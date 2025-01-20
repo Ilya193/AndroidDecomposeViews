@@ -54,19 +54,19 @@ class DefaultCounterComponent(
         }
 
         componentContext.lifecycle.doOnStart {
-            println("s149 doOnStart")
+            println("s149 doOnStart COUNTER")
         }
 
         componentContext.lifecycle.doOnResume {
-            println("s149 doOnResume")
+            println("s149 doOnResume COUNTER")
         }
 
         componentContext.lifecycle.doOnPause {
-            println("s149 doOnPause")
+            println("s149 doOnPause COUNTER")
         }
 
         componentContext.lifecycle.doOnStop {
-            println("s149 doOnStop")
+            println("s149 doOnStop COUNTER")
         }
     }
 

@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.defaultComponentContext
@@ -100,18 +99,12 @@ class RootFragment : Fragment() {
                 else -> super.instantiate(classLoader, className)
             }
 
-        fun counterFragment(): CounterFragment {
-            val fragment = CounterFragment(
-                getComponent = component::counterComponent
+        fun counterFragment(): CounterFragment =
+            CounterFragment(
+                onOpenDetails = ::onOpenDetails
             )
-            return fragment
-        }
 
-        fun detailsFragment(): DetailsFragment {
-            val fragment = DetailsFragment(
-                getComponent = component::detailsComponent
-            )
-            return fragment
-        }
+        fun detailsFragment(): DetailsFragment =
+            DetailsFragment()
     }
 }

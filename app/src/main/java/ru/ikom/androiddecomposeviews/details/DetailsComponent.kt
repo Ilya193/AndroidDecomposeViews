@@ -3,10 +3,6 @@ package ru.ikom.androiddecomposeviews.details
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.doOnCreate
 import com.arkivanov.essenty.lifecycle.doOnDestroy
-import com.arkivanov.essenty.lifecycle.doOnPause
-import com.arkivanov.essenty.lifecycle.doOnResume
-import com.arkivanov.essenty.lifecycle.doOnStart
-import com.arkivanov.essenty.lifecycle.doOnStop
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
