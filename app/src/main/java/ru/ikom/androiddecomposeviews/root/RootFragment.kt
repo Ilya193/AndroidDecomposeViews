@@ -11,6 +11,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.defaultComponentContext
+import com.arkivanov.decompose.retainedComponent
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.ikom.androiddecomposeviews.R
@@ -26,9 +27,11 @@ class RootFragment : Fragment() {
     private val fragmentFactoryImpl = FragmentFactoryImpl()
 
     private val component: RootComponent by lazy(LazyThreadSafetyMode.NONE) {
-        DefaultRootComponent(
-            defaultComponentContext(onBackPressedDispatcher = requireActivity().onBackPressedDispatcher)
-        )
+        retainedComponent { componentContext ->
+            DefaultRootComponent(
+                componentContext = componentContext,
+            )
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.defaultComponentContext
+import com.arkivanov.decompose.retainedComponent
 import kotlinx.coroutines.launch
 import ru.ikom.androiddecomposeviews.ViewRenderer
 import ru.ikom.androiddecomposeviews.databinding.CounterFragmentBinding
@@ -20,10 +21,12 @@ class CounterFragment(
     private val binding: CounterFragmentBinding get() = _binding!!
 
     private val component: CounterComponent by lazy(LazyThreadSafetyMode.NONE) {
-        DefaultCounterComponent(
-            componentContext = defaultComponentContext(onBackPressedDispatcher = requireActivity().onBackPressedDispatcher),
-            onOpenDetails = onOpenDetails,
-        )
+        retainedComponent { componentContext ->
+            DefaultCounterComponent(
+                componentContext = componentContext,
+                onOpenDetails = onOpenDetails,
+            )
+        }
     }
 
     override var viewRenderer: ViewRenderer<CounterView.Model>? = null
