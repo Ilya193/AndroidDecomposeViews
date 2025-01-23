@@ -13,21 +13,12 @@ interface RootComponent {
 
     val labels: Flow<Label?>
 
-    sealed interface Label {
-        class Back : Label
-        class OnOpenDetails : Label
-    }
+    sealed interface Label
 }
 
 class DefaultRootComponent(
     componentContext: ComponentContext,
 ) : RootComponent, ComponentContext by componentContext {
-
-    private val backCallback = BackCallback { publish(RootComponent.Label.Back()) }
-
-    init {
-        backHandler.register(backCallback)
-    }
 
     private var label: RootComponent.Label? = null
     private var observerLabel: Observer<RootComponent.Label>? = null

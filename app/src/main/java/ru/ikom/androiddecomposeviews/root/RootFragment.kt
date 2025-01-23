@@ -52,23 +52,8 @@ class RootFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupComponent()
-
         if (savedInstanceState == null) {
             openCounterFragment()
-        }
-    }
-
-    private fun setupComponent() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            component.labels.flowWithLifecycle(lifecycle, Lifecycle.State.RESUMED)
-                .filterNotNull()
-                .collect {
-                    when (it) {
-                        is RootComponent.Label.OnOpenDetails -> onOpenDetails()
-                        is RootComponent.Label.Back -> back()
-                    }
-                }
         }
     }
 

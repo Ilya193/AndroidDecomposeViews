@@ -8,8 +8,7 @@ import com.arkivanov.decompose.defaultComponentContext
 import com.arkivanov.decompose.retainedComponent
 import ru.ikom.androiddecomposeviews.R
 
-class DetailsFragment(
-) : Fragment(R.layout.details_fragment) {
+class DetailsFragment: Fragment(R.layout.details_fragment) {
 
     private val component: DetailsComponent by lazy(LazyThreadSafetyMode.NONE) {
         retainedComponent { componentContext ->
