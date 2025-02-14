@@ -12,6 +12,8 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.arkivanov.decompose.defaultComponentContext
 import com.arkivanov.decompose.retainedComponent
+import com.arkivanov.decompose.value.subscribe
+import com.arkivanov.essenty.lifecycle.asEssentyLifecycle
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import ru.ikom.androiddecomposeviews.R
@@ -34,6 +36,12 @@ class RootFragment : Fragment() {
         }
     }
 
+    private val testComponent: TestComponent by lazy {
+        retainedComponent {
+            DefaultTestComponent(it)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         component
         childFragmentManager.fragmentFactory = fragmentFactoryImpl
@@ -51,6 +59,12 @@ class RootFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        testComponent.childStack.subscribe(lifecycle.asEssentyLifecycle()) {
+            when (it.active.instance) {
+                is TestComponent.Child.ListChild -> TODO()
+            }
+        }
 
         if (savedInstanceState == null) {
             openCounterFragment()
@@ -87,10 +101,12 @@ class RootFragment : Fragment() {
                 else -> super.instantiate(classLoader, className)
             }
 
-        fun counterFragment(): CounterFragment =
-            CounterFragment(
+        fun counterFragment(): CounterFragment {
+            return CounterFragment(
+                getComponent = component::counterComponent,
                 onOpenDetails = ::onOpenDetails
             )
+        }
 
         fun detailsFragment(): DetailsFragment =
             DetailsFragment()
