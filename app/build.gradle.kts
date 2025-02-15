@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     kotlin("plugin.serialization") version "2.1.0"
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -20,6 +21,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        compose = true
     }
 
     buildTypes {
@@ -57,8 +59,21 @@ dependencies {
 
     implementation("com.arkivanov.decompose:decompose:3.2.2")
     implementation("com.arkivanov.decompose:extensions-android:3.2.2")
+    implementation("com.arkivanov.decompose:extensions-compose:3.2.2")
     implementation("com.arkivanov.essenty:lifecycle:2.4.0")
     implementation("com.arkivanov.essenty:lifecycle-coroutines:2.1.0")
+
+    implementation("androidx.fragment:fragment-compose:1.8.6")
+    implementation("androidx.activity:activity-compose:1.10.0")
+
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.ui.view.binding)
+    implementation(libs.androidx.material3)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 }

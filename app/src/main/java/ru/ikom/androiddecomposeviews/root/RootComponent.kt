@@ -1,42 +1,65 @@
 package ru.ikom.androiddecomposeviews.root
 
 import com.arkivanov.decompose.ComponentContext
-import com.arkivanov.essenty.backhandler.BackCallback
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import ru.ikom.androiddecomposeviews.Observer
-import ru.ikom.androiddecomposeviews.observer
+import com.arkivanov.decompose.router.stack.ChildStack
+import com.arkivanov.decompose.router.stack.StackNavigation
+import com.arkivanov.decompose.router.stack.childStack
+import com.arkivanov.decompose.router.stack.pushNew
+import com.arkivanov.decompose.value.Value
+import kotlinx.serialization.Serializable
+import ru.ikom.androiddecomposeviews.counter.CounterComponent
+import ru.ikom.androiddecomposeviews.counter.DefaultCounterComponent
+import ru.ikom.androiddecomposeviews.details.DefaultDetailsComponent
+import ru.ikom.androiddecomposeviews.details.DetailsComponent
 
 interface RootComponent {
 
-    val labels: Flow<Label?>
+    val stack: Value<ChildStack<*, Child>>
 
-    sealed interface Label
+    sealed class Child {
+        class Counter(val component: CounterComponent) : Child()
+        class Details(val component: DetailsComponent) : Child()
+    }
 }
 
 class DefaultRootComponent(
     componentContext: ComponentContext,
 ) : RootComponent, ComponentContext by componentContext {
 
-    private var label: RootComponent.Label? = null
-    private var observerLabel: Observer<RootComponent.Label>? = null
+    private val navigation = StackNavigation<Config>()
 
-    override val labels: Flow<RootComponent.Label?> = callbackFlow {
-        sendDataAndReset(channel, label)
-        observerLabel = observer { sendDataAndReset(channel, label) }
-        awaitClose { observerLabel = null }
+    override val stack: Value<ChildStack<*, RootComponent.Child>> =
+        childStack(
+            source = navigation,
+            serializer = Config.serializer(),
+            initialConfiguration = Config.Counter,
+            handleBackButton = true,
+            childFactory = ::child,
+        )
+
+    private fun child(config: Config, componentContext: ComponentContext): RootComponent.Child =
+        when (config) {
+            Config.Counter -> RootComponent.Child.Counter(counterComponent(componentContext))
+            Config.Details -> RootComponent.Child.Details(detailsComponent(componentContext))
+        }
+
+    private fun counterComponent(componentContext: ComponentContext): CounterComponent =
+        DefaultCounterComponent(
+            componentContext = componentContext,
+            onOpenDetails = { navigation.pushNew(Config.Details) }
+        )
+
+    private fun detailsComponent(componentContext: ComponentContext): DetailsComponent =
+        DefaultDetailsComponent(
+            componentContext = componentContext,
+        )
+
+    @Serializable
+    private sealed interface Config {
+        @Serializable
+        data object Counter : Config
+
+        @Serializable
+        data object Details : Config
     }
-
-    private fun sendDataAndReset(channel: SendChannel<RootComponent.Label?>, label: RootComponent.Label?) {
-        channel.trySend(label)
-        this.label = null
-    }
-
-    private fun publish(label: RootComponent.Label) {
-        this.label = label
-        observerLabel?.onNext(label)
-    }
-
 }
