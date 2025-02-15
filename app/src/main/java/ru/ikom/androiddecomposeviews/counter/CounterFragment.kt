@@ -4,37 +4,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.compose.AndroidFragment
 import androidx.lifecycle.lifecycleScope
-import com.arkivanov.decompose.retainedComponent
 import kotlinx.coroutines.launch
-import ru.ikom.androiddecomposeviews.ViewRenderer
 import ru.ikom.androiddecomposeviews.databinding.CounterFragmentBinding
 import ru.ikom.androiddecomposeviews.diff
 
-class CounterFragment(
-    private val getComponent: (Lifecycle) -> CounterComponent,
-    private val onOpenDetails: () -> Unit,
-) : Fragment(), CounterView {
+class CounterFragment : Fragment() {
 
     private var _binding: CounterFragmentBinding? = null
     private val binding: CounterFragmentBinding get() = _binding!!
-
-    private val component: CounterComponent by lazy(LazyThreadSafetyMode.NONE) {
-        retainedComponent { componentContext ->
-            DefaultCounterComponent(
-                componentContext = componentContext,
-                onOpenDetails = onOpenDetails,
-            )
-        }
-    }
-
-    private val test: CounterComponent by lazy {
-        getComponent(lifecycle)
-    }
-
-    override var viewRenderer: ViewRenderer<CounterView.Model>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,39 +28,32 @@ class CounterFragment(
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    fun observeComponent(component: CounterComponent) {
+        val viewRenderer = diff {
+            diff(
+                get = CounterView.Model::text,
+                set = binding.counter::setText
+            )
+        }
 
-        initCounterView(binding, test)
+        binding.counter.setOnClickListener { component.openDetails() }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            component.state.collect {
+                viewRenderer.render(stateToModel(it))
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        release()
         _binding = null
     }
 }
 
-fun CounterFragment.initCounterView(
-    binding: CounterFragmentBinding,
-    component: CounterComponent,
-) {
-    viewRenderer = diff {
-        diff(
-            get = CounterView.Model::text,
-            set = binding::updateCounter
-        )
+@Composable
+fun CounterScreen(component: CounterComponent) {
+    AndroidFragment<CounterFragment>(modifier = Modifier.fillMaxSize()) { fragment ->
+        fragment.observeComponent(component)
     }
-
-    binding.counter.setOnClickListener { component.openDetails() }
-
-    viewLifecycleOwner.lifecycleScope.launch {
-        component.state.collect {
-            render(stateToModel(it))
-        }
-    }
-}
-
-fun CounterFragmentBinding.updateCounter(text: String) {
-    counter.text = text
 }

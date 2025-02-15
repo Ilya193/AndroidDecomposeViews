@@ -4,111 +4,42 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentFactory
-import androidx.fragment.app.commit
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
-import com.arkivanov.decompose.defaultComponentContext
+import androidx.fragment.compose.content
+import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.retainedComponent
-import com.arkivanov.decompose.value.subscribe
-import com.arkivanov.essenty.lifecycle.asEssentyLifecycle
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
-import ru.ikom.androiddecomposeviews.R
-import ru.ikom.androiddecomposeviews.counter.CounterFragment
-import ru.ikom.androiddecomposeviews.databinding.RootFragmentBinding
-import ru.ikom.androiddecomposeviews.details.DetailsFragment
+import ru.ikom.androiddecomposeviews.counter.CounterScreen
+import ru.ikom.androiddecomposeviews.details.DetailsScreen
 
 class RootFragment : Fragment() {
-
-    private var _binding: RootFragmentBinding? = null
-    private val binding: RootFragmentBinding get() = _binding!!
-
-    private val fragmentFactoryImpl = FragmentFactoryImpl()
-
-    private val component: RootComponent by lazy(LazyThreadSafetyMode.NONE) {
-        retainedComponent { componentContext ->
-            DefaultRootComponent(
-                componentContext = componentContext,
-            )
-        }
-    }
-
-    private val testComponent: TestComponent by lazy {
-        retainedComponent {
-            DefaultTestComponent(it)
-        }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        component
-        childFragmentManager.fragmentFactory = fragmentFactoryImpl
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = RootFragmentBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        testComponent.childStack.subscribe(lifecycle.asEssentyLifecycle()) {
-            when (it.active.instance) {
-                is TestComponent.Child.ListChild -> TODO()
-            }
+        val component = retainedComponent {
+            DefaultRootComponent(it)
         }
 
-        if (savedInstanceState == null) {
-            openCounterFragment()
+        return content {
+            RootContent(component)
         }
     }
+}
 
-    private fun openCounterFragment() {
-        childFragmentManager.commit {
-            replace(R.id.content, fragmentFactoryImpl.counterFragment())
+@Composable
+fun RootContent(component: RootComponent) {
+    Children(
+        stack = component.stack,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        when (val child = it.instance) {
+            is RootComponent.Child.Counter -> CounterScreen(child.component)
+            is RootComponent.Child.Details -> DetailsScreen(child.component)
         }
-    }
-
-    private fun onOpenDetails() {
-        childFragmentManager.commit {
-            replace(R.id.content, fragmentFactoryImpl.detailsFragment())
-            addToBackStack(null)
-        }
-    }
-
-    private fun back() {
-        childFragmentManager.popBackStack()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    private inner class FragmentFactoryImpl : FragmentFactory() {
-        override fun instantiate(classLoader: ClassLoader, className: String): Fragment =
-            when (loadFragmentClass(classLoader, className)) {
-                CounterFragment::class.java -> counterFragment()
-                DetailsFragment::class.java -> detailsFragment()
-                else -> super.instantiate(classLoader, className)
-            }
-
-        fun counterFragment(): CounterFragment {
-            return CounterFragment(
-                getComponent = component::counterComponent,
-                onOpenDetails = ::onOpenDetails
-            )
-        }
-
-        fun detailsFragment(): DetailsFragment =
-            DetailsFragment()
     }
 }
