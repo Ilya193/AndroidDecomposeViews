@@ -59,7 +59,6 @@ dependencies {
 
     implementation("com.arkivanov.decompose:decompose:3.2.2")
     implementation("com.arkivanov.decompose:extensions-android:3.2.2")
-    implementation("com.arkivanov.decompose:extensions-compose:3.2.2")
     implementation("com.arkivanov.essenty:lifecycle:2.4.0")
     implementation("com.arkivanov.essenty:lifecycle-coroutines:2.1.0")
 
@@ -74,6 +73,8 @@ dependencies {
     implementation(libs.androidx.material3)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation("io.insert-koin:koin-android:3.5.6")
 
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
 }
